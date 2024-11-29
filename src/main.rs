@@ -84,7 +84,7 @@ Aliases:
     
     Repeat:
         - rep[eat] | rp | times
-        - one | once | single | one-time | onetime | 1-time | 1time | no-repeat | norepeat | no-rep | norep | only | only-once
+        - repeating | repetetive | loop | looping | infinite | ongoing | recurring | cyclic | series
         - skip | sk | skp | snooze | snz | skip-next | sk-next | skp-next | snooze-next | snz-next
 
     Commands:
@@ -126,9 +126,8 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
             let num = arg_num1.max(arg_num2);
             match arg_str.as_str() {
                 "rep" | "repe" | "repea" | "repeat" | "rp" | "times" => Arg::Repeat(num),
-                "one" | "once" | "single" | "one-time" | "no-repeat" | "no-rep" | "1-time"
-                | "1time" | "onetime" | "norepeat" | "norep" | "only" | "only-once"
-                | "repeat-once" => Arg::Repeat(1),
+                "repeating" | "infinite" | "series" | "recurring" | "loop" | "looping"
+                | "cyclic" | "ongoing" | "repetetive" => Arg::Repeat(0),
                 "r" | "re" | "rem" | "remo" | "remov" | "remove" | "rm" | "rmv" | "de" | "del"
                 | "dele" | "delet" | "delete" | "dl" | "dlt" | "erase" | "forget" | "forgt"
                 | "frgt" => Arg::Remove,
@@ -266,7 +265,7 @@ fn main() {
     let tokens = tokenize(&args);
     let mut title = String::new();
     let mut weekdays: u8 = 0;
-    let mut repeats: u32 = 0;
+    let mut repeats: u32 = 1;
     let now = Local::now();
     let mut end_time = now;
     let mut interval = Interval::default();
@@ -357,7 +356,8 @@ fn main() {
                 title += &titl;
                 title += " ";
             }
-            (Arg::Repeat(0), Arg::Number(reps), _) => repeats = reps,
+            (_, Arg::Repeat(0), Arg::Number(reps)) => repeats = reps,
+            (_, Arg::Repeat(reps), _) => repeats = reps,
             (_, Arg::Month(month), Arg::Number(day)) => {
                 end_time = end_time.with_month0(month).unwrap();
                 end_time = end_time.with_day(day).unwrap();
@@ -376,7 +376,6 @@ fn main() {
                 end_time = end_time.with_year(year as i32).unwrap();
                 default_interval.years = u32::MAX;
             }
-            (_, Arg::Repeat(reps), _) => repeats = reps,
             (_, Arg::WeekDay(bits), _) => {
                 weekdays |= bits;
                 default_interval.days = 1;
@@ -453,14 +452,16 @@ mod tests {
             ]
         );
 
-        let args = to_args(&["remind", "1m", "egg ready", "once"]);
+        let args = to_args(&["remind", "1m", "egg ready", "rep4", "skip", "3"]);
         let tokens = tokenize(&args);
         assert_eq!(
             tokens,
             [
                 Arg::TimeUnit(TimeUnit::Minute(1)),
                 Arg::Title("egg ready".to_string()),
-                Arg::Repeat(1)
+                Arg::Repeat(4),
+                Arg::Skip(0),
+                Arg::Number(3)
             ]
         );
 
