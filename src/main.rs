@@ -353,7 +353,10 @@ fn main() {
                 reminder_file.skip_next(skips.max(1));
                 return;
             }
-            (_, Arg::Title(titl), _) => title = titl,
+            (_, Arg::Title(titl), _) => {
+                title += &titl;
+                title += " ";
+            }
             (Arg::Repeat(0), Arg::Number(reps), _) => repeats = reps,
             (_, Arg::Month(month), Arg::Number(day)) => {
                 end_time = end_time.with_month0(month).unwrap();
@@ -408,6 +411,7 @@ fn main() {
         }
     }
 
+    let title = title.trim_end().to_owned();
     let mut reminder = Reminder {
         title,
         interval,
