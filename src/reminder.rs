@@ -152,26 +152,26 @@ impl std::fmt::Display for Reminder {
         let mut due_str = String::new();
         let mut fmt = |time: i64, unit: &str| {
             if time > 0 {
-                due_str += &format!("{time} {unit}{} ", if time == 1 { "" } else { "s" });
+                due_str += &format!(" {time}{unit}");
             }
         };
-        fmt(years, "year");
-        fmt(months, "month");
+        fmt(years, "y");
+        fmt(months, "mo");
         if years == 0 {
-            fmt(weeks, "week");
-            fmt(days, "day");
+            fmt(weeks, "w");
+            fmt(days, "d");
             if months == 0 && weeks == 0 {
-                fmt(hours, "hour");
+                fmt(hours, "h");
                 if days == 0 {
-                    fmt(mins, "min");
-                    fmt(secs, "sec");
+                    fmt(mins, "m");
+                    fmt(secs, "s");
                 }
             }
         }
         let due_str = if due_str.is_empty() {
             String::new()
         } else {
-            format!(" (in {})", due_str.trim_end())
+            format!(" (in{})", due_str)
         };
         let title = &self.title;
         let weekdays = match self.weekdays {

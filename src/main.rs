@@ -365,14 +365,14 @@ fn main() {
             }
             (_, Arg::TimeUnit(mut unit), Arg::Number(time))
             | (Arg::Number(time), Arg::TimeUnit(mut unit), _) => {
-                *unit = time.max(*unit).max(1);
+                *unit = if *unit == 0 { time } else { *unit }.max(1);
                 add_time_unit(unit);
             }
             (_, Arg::TimeUnit(mut unit), _) => {
                 *unit = (*unit).max(1);
                 add_time_unit(unit);
             }
-            (_, Arg::Number(year), _) if year as i32 >= now.year() && year < 3000 => {
+            (_, Arg::Number(year), _) if year as i32 >= now.year() && year < 2200 => {
                 end_time = end_time.with_year(year as i32).unwrap();
                 default_interval.years = u32::MAX;
             }

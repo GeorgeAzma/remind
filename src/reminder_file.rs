@@ -53,7 +53,7 @@ impl ReminderFile {
             .unwrap();
         file.write_all(reminder.serialize().as_bytes())
             .expect("failed to add reminder");
-        println!("reminder added: {reminder}");
+        println!("added: {reminder}");
     }
 
     fn save_file(&self, file: &str) {
@@ -135,7 +135,7 @@ impl ReminderFile {
 
     pub fn remove(&mut self, title: &str) {
         if let Some(best_match_idx) = self.match_title(title) {
-            println!("reminder removed: {}", &self.reminders[best_match_idx]);
+            println!("removed: {}", &self.reminders[best_match_idx]);
             self.remove_line(best_match_idx);
         } else {
             println!("no reminders with title \"{title}\" found");
