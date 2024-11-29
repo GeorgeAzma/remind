@@ -3,13 +3,13 @@ Easy to use Reminder CLI
 
 ### Examples
 ``` bash
-remind 1d "code more" once
+remind 1d "code tomorrow"
 remind minute "egg ready" repeat 4
 remind remove "egg" # fuzzy remove
 remind 12:30:15 feb 28 2029
 remind monday fri "go to work"
-remind work "go to work" # 5 days a week, at current time
-remind weekend "rest"
+remind weekly work "go to work" # 5 days a week, at current time
+remind weekend "rest" rep 8
 remind skip 2 "rest" # skip 2 weekends cause boss sucks
 remind undo
 remind help

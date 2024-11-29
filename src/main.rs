@@ -51,11 +51,11 @@ Aliases:
     Time:
         - s[econds] | sc | secs | scnds | secndo | sencod | secodn | secnod
         - m[inutes] | mn | mns | mintue | minteu | mitneu
-        - h[ours] | hr | hrs | hs | horus | hourly
-        - d[ays] | ds | daily
-        - w[eeks] | wk | wks | weekly
-        - mo | mont | month | months | mnth | mnths | monthly
-        - y[ears] | yr | yrs | ys | yearly
+        - h[ours] | hr | hrs | hs | horus
+        - d[ays] | ds
+        - w[eeks] | wk | wks
+        - mo | mont | month | months | mnth | mnths
+        - y[ears] | yr | yrs | ys
     
     Weekday:
         - su[nday] | sn | snd
@@ -86,6 +86,11 @@ Aliases:
         - rep[eat] | rp | times
         - repeating | repetetive | loop | looping | infinite | ongoing | recurring | cyclic | series
         - skip | sk | skp | snooze | snz | skip-next | sk-next | skp-next | snooze-next | snz-next
+        - hourly | everyhour | every-hour
+        - daily | everyday | every-day
+        - weekly | everyweek | every-week
+        - monthly | everymonth | every-month
+        - yearly | everyyear | every-year | annual | annually | anual | anually
 
     Commands:
         - undo 
@@ -131,6 +136,27 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                 "r" | "re" | "rem" | "remo" | "remov" | "remove" | "rm" | "rmv" | "de" | "del"
                 | "dele" | "delet" | "delete" | "dl" | "dlt" | "erase" | "forget" | "forgt"
                 | "frgt" => Arg::Remove,
+                "hourly" | "everyhour" | "every-hour" => {
+                    arg_toks.push(Arg::Repeat(0));
+                    Arg::TimeUnit(TimeUnit::Hour(num.max(1)))
+                }
+                "daily" | "everyday" | "every-day" => {
+                    arg_toks.push(Arg::Repeat(0));
+                    Arg::TimeUnit(TimeUnit::Day(num.max(1)))
+                }
+                "weekly" | "everyweek" | "every-week" => {
+                    arg_toks.push(Arg::Repeat(0));
+                    Arg::TimeUnit(TimeUnit::Week(num.max(1)))
+                }
+                "monthly" | "everymonth" | "every-month" => {
+                    arg_toks.push(Arg::Repeat(0));
+                    Arg::TimeUnit(TimeUnit::Month(num.max(1)))
+                }
+                "yearly" | "everyyear" | "every-year" | "annual" | "annually" | "anual"
+                | "anually" => {
+                    arg_toks.push(Arg::Repeat(0));
+                    Arg::TimeUnit(TimeUnit::Year(num.max(1)))
+                }
                 "weekend" | "weeken" | "weeke" | "weeknd" | "wknd" | "wkd" | "break" | "brk"
                 | "holiday" | "rest" | "week-end" | "sun,sat" | "sat,sun" | "sa,su" | "su,sa"
                 | "sn,st" | "st,sn" | "sun|sat" | "sat|sun" | "sa|su" | "su|sa" | "sn|st"
@@ -156,16 +182,17 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                 | "mnt" | "mnts" | "mintue" | "minteu" | "mitneu" | "mns" => {
                     Arg::TimeUnit(TimeUnit::Minute(num))
                 }
-                "h" | "ho" | "hou" | "hour" | "hr" | "hrs" | "hours" | "hs" | "horus"
-                | "hourly" => Arg::TimeUnit(TimeUnit::Hour(num)),
-                "d" | "da" | "day" | "days" | "ds" | "daily" => Arg::TimeUnit(TimeUnit::Day(num)),
-                "w" | "we" | "wee" | "week" | "weeks" | "wk" | "wks" | "weekly" => {
+                "h" | "ho" | "hou" | "hour" | "hr" | "hrs" | "hours" | "hs" | "horus" => {
+                    Arg::TimeUnit(TimeUnit::Hour(num))
+                }
+                "d" | "da" | "day" | "days" | "ds" => Arg::TimeUnit(TimeUnit::Day(num)),
+                "w" | "we" | "wee" | "week" | "weeks" | "wk" | "wks" => {
                     Arg::TimeUnit(TimeUnit::Week(num))
                 }
-                "mo" | "mont" | "month" | "months" | "mnth" | "mnths" | "monthly" => {
+                "mo" | "mont" | "month" | "months" | "mnth" | "mnths" => {
                     Arg::TimeUnit(TimeUnit::Month(num))
                 }
-                "y" | "ye" | "yea" | "year" | "years" | "yr" | "yrs" | "ys" | "yearly" => {
+                "y" | "ye" | "yea" | "year" | "years" | "yr" | "yrs" | "ys" => {
                     Arg::TimeUnit(TimeUnit::Year(num))
                 }
                 "su" | "sun" | "sund" | "sunda" | "sunday" | "sn" | "snd" => Arg::WeekDay(SUNDAY),
@@ -235,7 +262,21 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
         };
         arg_toks.push(arg_tok);
     }
-    arg_toks
+
+    arg_toks.into_iter().fold(Vec::new(), |mut acc, tok| {
+        if let Some(last) = acc.last_mut() {
+            match (last, &tok) {
+                (Arg::Title(last), Arg::Title(tok)) => {
+                    last.push(' ');
+                    *last += &tok;
+                }
+                _ => acc.push(tok),
+            }
+        } else {
+            acc.push(tok);
+        }
+        acc
+    })
 }
 
 fn main() {
@@ -352,10 +393,7 @@ fn main() {
                 reminder_file.skip_next(skips.max(1));
                 return;
             }
-            (_, Arg::Title(titl), _) => {
-                title += &titl;
-                title += " ";
-            }
+            (_, Arg::Title(titl), _) => title = titl,
             (_, Arg::Repeat(0), Arg::Number(reps)) => repeats = reps,
             (_, Arg::Repeat(reps), _) => repeats = reps,
             (_, Arg::Month(month), Arg::Number(day)) => {
@@ -410,7 +448,6 @@ fn main() {
         }
     }
 
-    let title = title.trim_end().to_owned();
     let mut reminder = Reminder {
         title,
         interval,

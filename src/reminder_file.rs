@@ -15,13 +15,15 @@ fn fuzzy_score(match_str: &str, search_str: &str) -> usize {
     while let Some(mut match_char) = match_iter.next() {
         for (i, search_char) in search_str.chars().skip(last_match_pos).enumerate() {
             if match_char == search_char {
-                score += 1;
+                score += 8;
                 last_match_pos = i;
                 if let Some(c) = match_iter.next() {
                     match_char = c;
                 } else {
                     break;
                 }
+            } else if score > 0 {
+                score -= 1;
             }
         }
     }
@@ -82,7 +84,7 @@ impl ReminderFile {
             .map(|res| res.unwrap().path())
             .collect::<Vec<_>>();
         if history_files.len() >= Self::MAX_HISTORY {
-            std::fs::remove_file(&history_files.into_iter().min().unwrap()).unwrap();
+            std::fs::remove_file(history_files.into_iter().min().unwrap()).unwrap();
         }
         let now = Local::now();
         self.save_file(&format!(
