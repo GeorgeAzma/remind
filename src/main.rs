@@ -90,7 +90,7 @@ Aliases:
     Commands:
         - undo 
         - clear | clean | cls | clr | remove-all | rm-all | del-all | delete-all | erase-all | rmv-all | dlt-all  
-        - r[emove] | rm | rmv | de[lete] | dl | dlt | erase
+        - r[emove] | rm | rmv | de[lete] | dl | dlt | erase | forget | forgt | frgt
         - l[ist] | ls | reminders | all | see | everything
         - h | help | hlp
 "#;
@@ -130,7 +130,8 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                 | "1time" | "onetime" | "norepeat" | "norep" | "only" | "only-once"
                 | "repeat-once" => Arg::Repeat(1),
                 "r" | "re" | "rem" | "remo" | "remov" | "remove" | "rm" | "rmv" | "de" | "del"
-                | "dele" | "delet" | "delete" | "dl" | "dlt" | "erase" => Arg::Remove,
+                | "dele" | "delet" | "delete" | "dl" | "dlt" | "erase" | "forget" | "forgt"
+                | "frgt" => Arg::Remove,
                 "weekend" | "weeken" | "weeke" | "weeknd" | "wknd" | "wkd" | "break" | "brk"
                 | "holiday" | "rest" | "week-end" | "sun,sat" | "sat,sun" | "sa,su" | "su,sa"
                 | "sn,st" | "st,sn" | "sun|sat" | "sat|sun" | "sa|su" | "su|sa" | "sn|st"
