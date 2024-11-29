@@ -259,9 +259,16 @@ impl std::fmt::Display for Reminder {
         } else {
             String::new()
         };
+        let skip = if self.skips == 0 {
+            String::new()
+        } else if self.skips == 1 {
+            " [skip]".to_string()
+        } else {
+            format!(" [skip {} times]", self.skips)
+        };
         let end = self.end_time.format("%y-%m-%d %H:%M:%S").to_string();
         f.write_fmt(format_args!(
-            "\"{title}\"{repeat}{weekdays}{interval_str} [at {end}]{due_str}"
+            "\"{title}\"{skip}{repeat}{weekdays}{interval_str} [at {end}]{due_str}"
         ))
     }
 }
