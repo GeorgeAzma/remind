@@ -112,6 +112,9 @@ impl Reminder {
             updated = true;
             if !always_repeats {
                 self.repeats -= 1;
+                if self.repeats == 0 {
+                    return (updated, true);
+                }
             }
             self.end_time = self
                 .end_time
