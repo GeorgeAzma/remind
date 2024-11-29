@@ -1,0 +1,10 @@
+[package]
+name = "remind"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.38"
+directories = "5.0.1"
+notify = "7.0.0"
+notify-rust = "4.11.3"
