@@ -31,21 +31,22 @@ fn print_help() {
     let help_str = r#"
 Examples:
     Add Reminders:
-        $ remind 3w "write homework"
-        $ remind 1m "egg ready" once
-        $ remind 1mo "go swimming" repeat 4
-        $ remind july 4 "pay" 12:30
-        $ remind mon fri "study"
-        $ remind weekend "rest"
-        $ remind work "go to work"
-        $ remind sun mon tue thu "code"
-        $ remind 12:30:15 feb 29 2029
+        $ remind 1d "code tomorrow"
+        $ remind minute "egg ready" repeat 4
+        $ remind 12:30:15 feb 28 2029
+        $ remind monday fri "study"
+        $ remind weekly work "go to work" # 5 days a week, at current time
+        $ remind weekend "rest" rep 8
+        $ remind skip 2 "rest" # skip 2 weekends cause boss sucks
+        $ remind daily 11am workout
+        $ remind undo
 
     List Reminders:
         $ remind list
 
     Remove Reminders (fuzzy):
         $ remind rm "some long name..."
+        $ remind clear
 
 Aliases:
     Time:
@@ -93,7 +94,7 @@ Aliases:
         - yearly | everyyear | every-year | annual | annually | anual | anually
 
     Commands:
-        - undo 
+        - undo | goback | go-back
         - clear | clean | cls | clr | remove-all | rm-all | del-all | delete-all | erase-all | rmv-all | dlt-all  
         - r[emove] | rm | rmv | de[lete] | dl | dlt | erase | forget | forgt | frgt
         - l[ist] | ls | reminders | all | see | everything
@@ -222,7 +223,7 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                 "december" | "dece" | "dec" => Arg::Month(11),
                 "skip" | "sk" | "skp" | "snooze" | "snz" | "skip-next" | "sk-next" | "skp-next"
                 | "snooze-next" | "snz-next" => Arg::Skip(num),
-                "undo" => Arg::Undo,
+                "undo" | "goback" | "go-back" => Arg::Undo,
                 _ => {
                     let mut arg_str = arg;
                     let pm = arg_str.ends_with("pm");
