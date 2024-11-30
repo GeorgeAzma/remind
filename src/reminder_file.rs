@@ -111,7 +111,6 @@ impl ReminderFile {
     }
 
     fn match_title(&self, title: &str) -> Option<usize> {
-        println!("{}", title);
         self.reminders
             .iter()
             .enumerate()
