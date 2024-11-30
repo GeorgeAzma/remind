@@ -111,13 +111,14 @@ impl ReminderFile {
     }
 
     fn match_title(&self, title: &str) -> Option<usize> {
+        println!("{}", title);
         self.reminders
             .iter()
-            .filter_map(|rem| {
-                let score = fuzzy_score(title, &rem.title);
-                (score > 0).then_some(score)
-            })
             .enumerate()
+            .filter_map(|(i, rem)| {
+                let score = fuzzy_score(title, &rem.title);
+                (score > 0).then_some((i, score))
+            })
             .max_by_key(|(_, score)| *score)
             .map(|(i, _)| i)
     }
