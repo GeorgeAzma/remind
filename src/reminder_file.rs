@@ -144,6 +144,15 @@ impl ReminderFile {
         }
     }
 
+    pub fn remove_last(&mut self) {
+        if let Some(last) = self.reminders.last() {
+            println!("removed: {}", last);
+            self.remove_line(self.reminders.len() - 1);
+        } else {
+            println!("no last reminder");
+        }
+    }
+
     pub fn skip(&mut self, title: &str, skips: u32) {
         if let Some(best_match_idx) = self.match_title(title) {
             self.reminders[best_match_idx].skips += skips;

@@ -248,11 +248,11 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                         let now = Local::now();
                         match (hour, min, sec) {
                             (E, E, E) => Arg::Title(arg.to_owned()),
-                            (h, E, E) => Arg::Time(h, now.minute(), now.second()),
-                            (E, m, E) => Arg::Time(now.hour(), m, now.second()),
+                            (h, E, E) => Arg::Time(h, 0, 0),
+                            (E, m, E) => Arg::Time(now.hour(), m, 0),
                             (E, E, s) => Arg::Time(now.hour(), now.minute(), s),
                             (E, m, s) => Arg::Time(now.hour(), m, s),
-                            (h, m, E) => Arg::Time(h, m, now.second()),
+                            (h, m, E) => Arg::Time(h, m, 0),
                             (h, m, s) => Arg::Time(h, m, s),
                         }
                     } else {
@@ -377,6 +377,10 @@ fn main() {
                 reminder_file.remove(&titl);
                 return;
             }
+            (_, Arg::Remove, _) => {
+                reminder_file.remove_last();
+                return;
+            }
             // skip 3 "reminder" | skip "reminder" 3 | "reminder" skip 3
             // skip "reminder" | "reminder" skip | skip3 "reminder" | "reminder" skip3
             (Arg::Skip(0), Arg::Number(skips), Arg::Title(title))
@@ -428,11 +432,6 @@ fn main() {
             (a, Arg::Month(_), b) => panic!(
                 "invalid month pattern ({a:?} Arg::Month {b:?}), try: remind july 4 \"my reminder\""
             ),
-            (a, Arg::Remove, b) => {
-                panic!(
-                    "invalid remove pattern ({a:?} Arg::Remove {b:?}), try: remove \"my reminder\""
-                )
-            }
             (_, Arg::Number(_), _) => {}
         };
     }
