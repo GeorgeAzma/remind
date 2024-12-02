@@ -164,7 +164,9 @@ impl std::fmt::Display for Reminder {
                 fmt(hours, "h");
                 if days == 0 {
                     fmt(mins, "m");
-                    fmt(secs, "s");
+                    if hours == 0 {
+                        fmt(secs, "s");
+                    }
                 }
             }
         }
@@ -266,9 +268,12 @@ impl std::fmt::Display for Reminder {
         } else {
             format!(" [skip {} times]", self.skips)
         };
-        let end = self.end_time.format("%y-%m-%d %H:%M:%S").to_string();
+        let mut end = self.end_time.format("%y-%m-%d %H:%M:%S").to_string();
+        if end.ends_with(":00") {
+            end = end[..end.len() - 3].to_string();
+        }
         f.write_fmt(format_args!(
-            "\"{title}\"{skip}{repeat}{weekdays}{interval_str} [at {end}]{due_str}"
+            "\"{title}\"{skip}{repeat}{weekdays}{interval_str} [{end}]{due_str}"
         ))
     }
 }
