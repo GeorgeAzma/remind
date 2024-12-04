@@ -92,6 +92,11 @@ Aliases:
         - weekly | everyweek | every-week
         - monthly | everymonth | every-month
         - yearly | everyyear | every-year | annual | annually | anual | anually
+        - 1x, x1, 2x, x2...
+        - twice
+
+    Numbers:
+        - one, two, three, four, five, six, seven, eight, nine, ten
 
     Commands:
         - undo | goback | go-back
@@ -131,9 +136,22 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
             let (arg_num1, arg_str, arg_num2) = num_str_num(arg);
             let num = arg_num1.max(arg_num2);
             match arg_str.as_str() {
+                "zero" => Arg::Number(0),
+                "one" => Arg::Number(1),
+                "two" => Arg::Number(2),
+                "three" => Arg::Number(3),
+                "four" => Arg::Number(4),
+                "five" => Arg::Number(5),
+                "six" => Arg::Number(6),
+                "seven" => Arg::Number(7),
+                "eight" => Arg::Number(8),
+                "nine" => Arg::Number(9),
+                "ten" => Arg::Number(10),
                 "rep" | "repe" | "repea" | "repeat" | "rp" | "times" => Arg::Repeat(num),
                 "repeating" | "infinite" | "series" | "recurring" | "loop" | "looping"
                 | "cyclic" | "ongoing" | "repetetive" => Arg::Repeat(0),
+                "twice" => Arg::Repeat(2),
+                "x" if num > 0 => Arg::Repeat(num),
                 "r" | "re" | "rem" | "remo" | "remov" | "remove" | "rm" | "rmv" | "de" | "del"
                 | "dele" | "delet" | "delete" | "dl" | "dlt" | "erase" | "forget" | "forgt"
                 | "frgt" => Arg::Remove,
@@ -307,7 +325,7 @@ fn main() {
     let tokens = tokenize(&args);
     let mut title = String::new();
     let mut weekdays: u8 = 0;
-    let mut repeats: u32 = 1;
+    let mut repeats = None;
     let now = Local::now();
     let mut end_time = now;
     let mut interval = Interval::default();
@@ -399,8 +417,8 @@ fn main() {
                 return;
             }
             (_, Arg::Title(titl), _) => title = titl,
-            (_, Arg::Repeat(0), Arg::Number(reps)) => repeats = reps,
-            (_, Arg::Repeat(reps), _) => repeats = reps,
+            (_, Arg::Repeat(0), Arg::Number(reps)) if repeats.is_none() => repeats = Some(reps),
+            (_, Arg::Repeat(reps), _) => repeats = Some(reps),
             (_, Arg::Month(month), Arg::Number(day)) => {
                 end_time = end_time.with_month0(month).unwrap();
                 end_time = end_time.with_day(day).unwrap();
@@ -421,7 +439,7 @@ fn main() {
             }
             (_, Arg::WeekDay(bits), _) => {
                 weekdays |= bits;
-                default_interval.days = 1;
+                default_interval.days = if bits.count_ones() == 1 { 7 } else { 1 }
             }
             (_, Arg::Time(h, m, s), _) => {
                 end_time = end_time
@@ -438,7 +456,7 @@ fn main() {
 
     if interval.is_zero() {
         if default_interval.years == u32::MAX {
-            repeats = 1;
+            repeats = Some(1);
         } else if default_interval.years == 1 {
             interval.years = 1;
         } else if default_interval.months == 1 {
@@ -448,11 +466,23 @@ fn main() {
         }
     }
 
+    if end_time < now {
+        if default_interval.years == u32::MAX {
+            return;
+        } else if default_interval.years > 0 {
+            end_time = end_time.with_year(now.year() + 1).unwrap();
+        } else if default_interval.months > 0 {
+            end_time = end_time.checked_add_months(Months::new(1)).unwrap();
+        } else if default_interval.days > 0 {
+            end_time += Duration::days(default_interval.days as i64);
+        }
+    }
+
     let mut reminder = Reminder {
         title,
         interval,
         end_time,
-        repeats,
+        repeats: repeats.unwrap_or(1),
         skips: 0,
         weekdays,
     };
