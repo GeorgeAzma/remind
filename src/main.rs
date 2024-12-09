@@ -85,13 +85,10 @@ Aliases:
     
     Repeat:
         - rep[eat] | rp | times
-        - repeating | repetetive | loop | looping | infinite | ongoing | recurring | cyclic | series
+        - repeating | repetetive | every | loop | looping | infinite | ongoing | recurring | cyclic | series
         - skip | sk | skp | snooze | snz | skip-next | sk-next | skp-next | snooze-next | snz-next
-        - hourly | everyhour | every-hour
-        - daily | everyday | every-day
-        - weekly | everyweek | every-week
-        - monthly | everymonth | every-month
-        - yearly | everyyear | every-year | annual | annually | anual | anually
+        - hourly | daily | weekly | monthly
+        - yearly | annual | annually | anual | anually
         - 1x, x1, 2x, x2...
         - twice
 
@@ -148,31 +145,30 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                 "nine" => Arg::Number(9),
                 "ten" => Arg::Number(10),
                 "rep" | "repe" | "repea" | "repeat" | "rp" | "times" => Arg::Repeat(num),
-                "repeating" | "infinite" | "series" | "recurring" | "loop" | "looping"
-                | "cyclic" | "ongoing" | "repetetive" => Arg::Repeat(0),
+                "repeating" | "repetetive" | "every" | "infinite" | "series" | "recurring"
+                | "loop" | "looping" | "cyclic" | "ongoing" => Arg::Repeat(0),
                 "twice" => Arg::Repeat(2),
                 "x" if num > 0 => Arg::Repeat(num),
                 "r" | "re" | "rem" | "remo" | "remov" | "remove" | "rm" | "rmv" | "de" | "del"
                 | "dele" | "delet" | "delete" | "dl" | "dlt" | "erase" | "forget" | "forgt"
                 | "frgt" => Arg::Remove,
-                "hourly" | "everyhour" | "every-hour" => {
+                "hourly" => {
                     arg_toks.push(Arg::Repeat(0));
                     Arg::TimeUnit(TimeUnit::Hour(num.max(1)))
                 }
-                "daily" | "everyday" | "every-day" => {
+                "daily" => {
                     arg_toks.push(Arg::Repeat(0));
                     Arg::TimeUnit(TimeUnit::Day(num.max(1)))
                 }
-                "weekly" | "everyweek" | "every-week" => {
+                "weekly" => {
                     arg_toks.push(Arg::Repeat(0));
                     Arg::TimeUnit(TimeUnit::Week(num.max(1)))
                 }
-                "monthly" | "everymonth" | "every-month" => {
+                "monthly" => {
                     arg_toks.push(Arg::Repeat(0));
                     Arg::TimeUnit(TimeUnit::Month(num.max(1)))
                 }
-                "yearly" | "everyyear" | "every-year" | "annual" | "annually" | "anual"
-                | "anually" => {
+                "yearly" | "annual" | "annually" | "anual" | "anually" => {
                     arg_toks.push(Arg::Repeat(0));
                     Arg::TimeUnit(TimeUnit::Year(num.max(1)))
                 }
