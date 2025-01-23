@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 use chrono::{Datelike, Duration, Local, Months, NaiveTime, Timelike};
 mod time_unit;
 use time_unit::*;
@@ -7,8 +8,6 @@ mod reminder_file;
 use reminder_file::*;
 mod interval;
 use interval::*;
-
-// TODO: undo
 
 #[derive(Debug, Clone, PartialEq)]
 enum Arg {
