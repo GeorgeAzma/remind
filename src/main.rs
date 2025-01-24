@@ -1,4 +1,3 @@
-#![windows_subsystem = "windows"]
 use chrono::{Datelike, Duration, Local, Months, NaiveTime, Timelike};
 mod time_unit;
 use time_unit::*;
