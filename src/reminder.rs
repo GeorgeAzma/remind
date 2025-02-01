@@ -194,7 +194,7 @@ impl std::fmt::Display for Reminder {
                     days: 0,
                     months: 0,
                     years: 0,
-                } => "never".to_string(),
+                } => " [never]".to_string(),
                 Interval {
                     secs: 0,
                     mins: 0,

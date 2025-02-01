@@ -130,7 +130,7 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
         } else {
             let (arg_num1, arg_str, arg_num2) = num_str_num(arg);
             let num = arg_num1.max(arg_num2);
-            match arg_str.as_str() {
+            match arg_str.to_lowercase().as_str() {
                 "zero" => Arg::Number(0),
                 "one" => Arg::Number(1),
                 "two" => Arg::Number(2),
@@ -237,7 +237,8 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                 | "snooze-next" | "snz-next" => Arg::Skip(num),
                 "undo" | "goback" | "go-back" => Arg::Undo,
                 _ => {
-                    let mut arg_str = arg;
+                    let arg_lower = arg.to_lowercase();
+                    let mut arg_str = arg_lower.as_str();
                     let pm = arg_str.ends_with("pm");
                     let am = arg_str.ends_with("am");
                     if pm || am || arg_str.contains(':') {
@@ -455,8 +456,10 @@ fn main() {
             interval.years = 1;
         } else if default_interval.months == 1 {
             interval.months = 1;
-        } else {
+        } else if default_interval.days == 1 {
             interval.days = 1;
+        } else {
+            end_time += Duration::milliseconds(1);
         }
     }
 
