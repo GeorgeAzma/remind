@@ -1,4 +1,4 @@
-#[derive(Default)]
+#[derive(Default, PartialEq, Eq)]
 pub struct Interval {
     pub secs: u32,
     pub mins: u32,

@@ -8,6 +8,12 @@ use reminder_file::*;
 mod interval;
 use interval::*;
 
+// (small) TODO:
+// - undo not perfect when reminder expires
+// - remind every next day "does not do how it sounds"
+// - remind every other day "does not exist"
+// - remind after 2 days
+
 #[derive(Debug, Clone, PartialEq)]
 enum Arg {
     Title(String),
@@ -19,6 +25,7 @@ enum Arg {
     Time(u32, u32, u32), // hour, min, sec
     Month(u32),
     Skip(u32),
+    Next(u32),
     Undo,
     Clear,
     List,
@@ -52,6 +59,8 @@ Aliases:
         - m[inutes] | mn | mns | mintue | minteu | mitneu
         - h[ours] | hr | hrs | hs | horus
         - d[ays] | ds
+        - tomorrow | tomorow | tommorow | tommorrow
+        - next | after
         - w[eeks] | wk | wks
         - mo | mont | month | months | mnth | mnths
         - y[ears] | yr | yrs | ys
@@ -142,6 +151,7 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                 "eight" => Arg::Number(8),
                 "nine" => Arg::Number(9),
                 "ten" => Arg::Number(10),
+                "next" | "after" => Arg::Next(num),
                 "rep" | "repe" | "repea" | "repeat" | "rp" | "times" => Arg::Repeat(num),
                 "repeating" | "repetetive" | "every" | "infinite" | "series" | "recurring"
                 | "loop" | "looping" | "cyclic" | "ongoing" => Arg::Repeat(0),
@@ -199,6 +209,9 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
                     Arg::TimeUnit(TimeUnit::Hour(num))
                 }
                 "d" | "da" | "day" | "days" | "ds" => Arg::TimeUnit(TimeUnit::Day(num)),
+                "tomorrow" | "tomorow" | "tommorrow" | "tommorow" => {
+                    Arg::TimeUnit(TimeUnit::Day(1))
+                }
                 "w" | "we" | "wee" | "week" | "weeks" | "wk" | "wks" => {
                     Arg::TimeUnit(TimeUnit::Week(num))
                 }
@@ -282,7 +295,7 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
             match (last, &tok) {
                 (Arg::Title(last), Arg::Title(tok)) => {
                     last.push(' ');
-                    *last += &tok;
+                    *last += tok;
                 }
                 _ => acc.push(tok),
             }
@@ -296,7 +309,8 @@ fn tokenize(args: &[String]) -> Vec<Arg> {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
-    let dir = directories::ProjectDirs::from("", "", "Remind").unwrap();
+    let dir = directories::ProjectDirs::from("", "", "Remind")
+        .unwrap_or_else(|| panic!("saved reminders folder does not exist"));
     let mut dir = dir.data_local_dir().to_owned();
     if dir.ends_with("data") {
         dir = dir.parent().unwrap().to_owned();
@@ -325,6 +339,7 @@ fn main() {
     let mut end_time = now;
     let mut interval = Interval::default();
     let mut default_interval = Interval::default();
+    let mut next = 0;
     for (i, tok) in tokens.iter().enumerate() {
         let mut add_time_unit = |unit: TimeUnit| {
             match unit {
@@ -411,6 +426,9 @@ fn main() {
                 reminder_file.skip_next(skips.max(1));
                 return;
             }
+            (_, Arg::Next(0), Arg::Number(num)) | (_, Arg::Next(num), _) => {
+                next = num.max(1);
+            }
             (_, Arg::Title(titl), _) => title = titl,
             (_, Arg::Repeat(0), Arg::Number(reps)) if repeats.is_none() => repeats = Some(reps),
             (_, Arg::Repeat(reps), _) => repeats = Some(reps),
@@ -458,20 +476,22 @@ fn main() {
             interval.months = 1;
         } else if default_interval.days == 1 {
             interval.days = 1;
-        } else {
+        } else if default_interval == Default::default() {
             end_time += Duration::milliseconds(1);
         }
     }
 
-    if end_time < now {
-        if default_interval.years == u32::MAX {
-            return;
-        } else if default_interval.years > 0 {
-            end_time = end_time.with_year(now.year() + 1).unwrap();
-        } else if default_interval.months > 0 {
-            end_time = end_time.checked_add_months(Months::new(1)).unwrap();
-        } else if default_interval.days > 0 {
-            end_time += Duration::days(default_interval.days as i64);
+    if end_time <= now {
+        for _ in 0..=next {
+            if default_interval.years == u32::MAX {
+                return;
+            } else if default_interval.years > 0 {
+                end_time = end_time.with_year(now.year() + 1).unwrap();
+            } else if default_interval.months > 0 {
+                end_time = end_time.checked_add_months(Months::new(1)).unwrap();
+            } else if default_interval.days > 0 {
+                end_time += Duration::days(default_interval.days as i64);
+            }
         }
     }
 

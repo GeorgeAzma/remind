@@ -23,7 +23,7 @@ fn fuzzy_score(match_str: &str, search_str: &str) -> usize {
                     break;
                 }
             } else if score > 0 {
-                score -= 1;
+                score = score.saturating_sub(1);
             }
         }
     }

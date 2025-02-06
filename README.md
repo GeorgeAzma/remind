@@ -42,5 +42,5 @@ remind day "code"
 ```
 
 ### Notes
-- reminders are saved in `C:/User/AppData/Local/Remind/reminders.txt`
+- reminders are saved in `C:/Users/AppData/Local/Remind/reminders.txt`
 - technically this should work on linux, but it's untested
